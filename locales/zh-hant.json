@@ -23,5 +23,11 @@
   "crash_title": "Uzume - 嚴重故障報告",
   "crash_prompt": "Uzume 遭遇未捕捉的嚴重例外狀況，程序被迫終止。\n\n技術診斷已傾印至：\n{}\n\n請將該崩潰記錄回報至專案倉儲：\n{}\n\n是否立即檢視日誌檔案並開啟 GitHub 回報頁面？",
   "tray_ai_notice": "關於翻譯說明",
-  "ai_translation_notice": "本程式之文字係透過專用人工智慧模型翻譯生成。若有語意不順或不合邏輯之處，敬請見諒。若您願意協助進行人工校對並改善在地化品質，歡迎透過我們的 GitHub 專案提出貢獻：https://github.com/TanukiSoftworks/Uzume"
+  "ai_translation_notice": "本程式之文字係透過專用人工智慧模型翻譯生成。若有語意不順或不合邏輯之處，敬請見諒。若您願意協助進行人工校對並改善在地化品質，歡迎透過我們的 GitHub 專案提出貢獻：https://github.com/TanukiSoftworks/Uzume",
+  "tray_check_updates": "檢查更新",
+  "update_available_title": "Uzume - 可用更新",
+  "update_available_msg": "Uzume 有可用新版本: {}\n目前版本: {}\n\n是否開啟 GitHub 下載頁面？",
+  "update_latest_title": "Uzume - 已是最新版本",
+  "update_latest_msg": "已安裝最新版本 ({})。",
+  "update_error_msg": "無法自動檢查更新。\n\n是否開啟 GitHub 手動檢查？"
 }

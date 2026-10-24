@@ -19,6 +19,9 @@ const WM_TRAY_CALLBACK: u32 = WM_APP + 1;
 const ID_TRAY_SETTINGS: usize = 1001;
 const ID_TRAY_EXIT: usize = 1002;
 const ID_TRAY_AI_NOTICE: usize = 1003;
+const ID_TRAY_CHECK_UPDATES: usize = 1004;
+
+const APP_VERSION: &str = "1.1.0";
 
 const ID_EDIT_CUSTOM_TEXT: usize = 2004;
 const ID_BTN_SAVE: usize = 2010;
@@ -399,7 +402,9 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: 
                     let s = state.strings;
 
                     DrawIconEx(mem_dc, 24, 18, state.app_icon, 28, 28, 0, None, DI_NORMAL);
-                    render_text(mem_dc, state.font_title, COLOR_TEXT, "Uzume", 60, 19, 400, 30);
+                    render_text(mem_dc, state.font_title, COLOR_TEXT, "Uzume", 60, 19, 110, 30);
+                    let ver_label = format!("v{}", APP_VERSION);
+                    render_text(mem_dc, state.font_small, COLOR_MUTED_DARK, &ver_label, 146, 26, 80, 18);
                     render_text(mem_dc, state.font_small, COLOR_MUTED, &s.section_format, 24, 60, 476, 18);
 
                     let is_opt1 = state.current_mode == StatusDisplayMode::ListeningSong;
@@ -687,6 +692,17 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: 
                         let _ = MessageBoxW(hwnd, PCWSTR(wide_msg.as_ptr()), PCWSTR(wide_title.as_ptr()), MB_OK | MB_ICONINFORMATION);
                     }
                 }
+                ID_TRAY_CHECK_UPDATES => {
+                    let strings_opt: Option<&'static Strings> = {
+                        if let Ok(state_guard) = UI_STATE.lock() {
+                            state_guard.as_ref().map(|s| s.strings)
+                        } else {
+                            None
+                        }
+                    };
+                    let strings = strings_opt.unwrap_or_else(|| get_strings(crate::config::Language::Auto));
+                    spawn_update_check(strings);
+                }
                 ID_BTN_SAVE => {
                     let save_result: Option<(StatusDisplayMode, String, &'static Strings)> = {
                         if let Ok(state_guard) = UI_STATE.lock() {
@@ -743,26 +759,33 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: 
                 let mut pt = POINT::default();
                 let _ = GetCursorPos(&mut pt);
 
-                let (tray_open, tray_exit, tray_ai_notice) = if let Ok(state_guard) = UI_STATE.try_lock() {
+                let (tray_open, tray_updates, tray_exit, tray_ai_notice) = if let Ok(state_guard) = UI_STATE.try_lock() {
                     if let Some(s) = state_guard.as_ref() {
                         let ai_notice = if !s.strings.ai_translation_notice.is_empty() {
                             Some(s.strings.tray_ai_notice.as_str())
                         } else {
                             None
                         };
-                        (s.strings.tray_open.as_str(), s.strings.tray_exit.as_str(), ai_notice)
+                        (
+                            s.strings.tray_open.as_str(),
+                            s.strings.tray_check_updates.as_str(),
+                            s.strings.tray_exit.as_str(),
+                            ai_notice,
+                        )
                     } else {
-                        ("Abrir Uzume", "Salir", None)
+                        ("Abrir Uzume", "Buscar actualizaciones", "Salir", None)
                     }
                 } else {
-                    ("Abrir Uzume", "Salir", None)
+                    ("Abrir Uzume", "Buscar actualizaciones", "Salir", None)
                 };
 
                 let wide_open: Vec<u16> = tray_open.encode_utf16().chain(std::iter::once(0)).collect();
+                let wide_updates: Vec<u16> = tray_updates.encode_utf16().chain(std::iter::once(0)).collect();
                 let wide_exit: Vec<u16> = tray_exit.encode_utf16().chain(std::iter::once(0)).collect();
 
                 let hmenu = CreatePopupMenu().unwrap_or_default();
                 let _ = AppendMenuW(hmenu, MF_STRING, ID_TRAY_SETTINGS, PCWSTR(wide_open.as_ptr()));
+                let _ = AppendMenuW(hmenu, MF_STRING, ID_TRAY_CHECK_UPDATES, PCWSTR(wide_updates.as_ptr()));
 
                 if let Some(ai_txt) = tray_ai_notice {
                     let wide_ai: Vec<u16> = ai_txt.encode_utf16().chain(std::iter::once(0)).collect();
@@ -791,5 +814,146 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: 
             LRESULT(0)
         }
         _ => DefWindowProcW(hwnd, msg, wparam, lparam),
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct GithubReleaseResponse {
+    #[serde(default)]
+    tag_name: String,
+}
+
+fn parse_version(v: &str) -> (u32, u32, u32, String) {
+    let cleaned = v.trim().trim_start_matches(|c| c == 'v' || c == 'V');
+    let mut parts = cleaned.splitn(3, '.');
+    let major: u32 = parts.next().and_then(|s| s.parse().ok()).unwrap_or(0);
+    let minor: u32 = parts.next().and_then(|s| s.parse().ok()).unwrap_or(0);
+    let patch_raw = parts.next().unwrap_or("0");
+    let digits: String = patch_raw.chars().take_while(|c| c.is_ascii_digit()).collect();
+    let patch: u32 = digits.parse().unwrap_or(0);
+    let suffix = patch_raw[digits.len()..].trim_start_matches('-').to_lowercase();
+    (major, minor, patch, suffix)
+}
+
+pub fn is_remote_newer(remote_tag: &str, local_ver: &str) -> bool {
+    let (r_maj, r_min, r_pat, r_suf) = parse_version(remote_tag);
+    let (l_maj, l_min, l_pat, l_suf) = parse_version(local_ver);
+
+    match (r_maj, r_min, r_pat).cmp(&(l_maj, l_min, l_pat)) {
+        std::cmp::Ordering::Greater => true,
+        std::cmp::Ordering::Less => false,
+        std::cmp::Ordering::Equal => r_suf > l_suf,
+    }
+}
+
+fn fetch_latest_github_tag() -> Option<String> {
+    let resp = ureq::get("https://api.github.com/repos/TanukiSoftworks/Uzume/releases/latest")
+        .header("User-Agent", "Uzume-Updater/1.0")
+        .header("Accept", "application/vnd.github+json")
+        .call()
+        .ok()?;
+    let data = resp.into_body().read_json::<GithubReleaseResponse>().ok()?;
+    let tag = data.tag_name.trim().to_string();
+    if tag.is_empty() {
+        None
+    } else {
+        Some(tag)
+    }
+}
+
+fn spawn_update_check(strings: &'static Strings) {
+    std::thread::spawn(move || unsafe {
+        let releases_url = w!("https://github.com/TanukiSoftworks/Uzume/releases/latest");
+        let open_verb = w!("open");
+
+        match fetch_latest_github_tag() {
+            Some(remote_tag) => {
+                if is_remote_newer(&remote_tag, APP_VERSION) {
+                    let msg = strings
+                        .update_available_msg
+                        .replacen("{}", &remote_tag, 1)
+                        .replacen("{}", APP_VERSION, 1);
+                    let wide_title: Vec<u16> = strings
+                        .update_available_title
+                        .encode_utf16()
+                        .chain(std::iter::once(0))
+                        .collect();
+                    let wide_msg: Vec<u16> = msg.encode_utf16().chain(std::iter::once(0)).collect();
+                    let res = MessageBoxW(
+                        None,
+                        PCWSTR(wide_msg.as_ptr()),
+                        PCWSTR(wide_title.as_ptr()),
+                        MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND,
+                    );
+                    if res == IDYES {
+                        let _ = ShellExecuteW(
+                            None,
+                            open_verb,
+                            releases_url,
+                            PCWSTR::null(),
+                            PCWSTR::null(),
+                            SW_SHOWNORMAL,
+                        );
+                    }
+                } else {
+                    let msg = strings.update_latest_msg.replace("{}", APP_VERSION);
+                    let wide_title: Vec<u16> = strings
+                        .update_latest_title
+                        .encode_utf16()
+                        .chain(std::iter::once(0))
+                        .collect();
+                    let wide_msg: Vec<u16> = msg.encode_utf16().chain(std::iter::once(0)).collect();
+                    let _ = MessageBoxW(
+                        None,
+                        PCWSTR(wide_msg.as_ptr()),
+                        PCWSTR(wide_title.as_ptr()),
+                        MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND,
+                    );
+                }
+            }
+            None => {
+                let wide_title: Vec<u16> = strings
+                    .tray_check_updates
+                    .encode_utf16()
+                    .chain(std::iter::once(0))
+                    .collect();
+                let wide_msg: Vec<u16> = strings
+                    .update_error_msg
+                    .encode_utf16()
+                    .chain(std::iter::once(0))
+                    .collect();
+                let res = MessageBoxW(
+                    None,
+                    PCWSTR(wide_msg.as_ptr()),
+                    PCWSTR(wide_title.as_ptr()),
+                    MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND,
+                );
+                if res == IDYES {
+                    let _ = ShellExecuteW(
+                        None,
+                        open_verb,
+                        releases_url,
+                        PCWSTR::null(),
+                        PCWSTR::null(),
+                        SW_SHOWNORMAL,
+                    );
+                }
+            }
+        }
+    });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_version_comparison() {
+        assert!(!is_remote_newer("1.0.1", "1.0.2a"));
+        assert!(!is_remote_newer("v1.0.2a", "1.0.2a"));
+        assert!(is_remote_newer("1.0.2b", "1.0.2a"));
+        assert!(is_remote_newer("v1.0.3", "1.0.2a"));
+        assert!(is_remote_newer("1.1.0", "1.0.2a"));
+        assert!(is_remote_newer("1.0.2a", "1.0.2"));
     }
 }

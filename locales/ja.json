@@ -23,5 +23,11 @@
   "crash_title": "Uzume - 致命的エラーレポート",
   "crash_prompt": "Uzume に予期せぬ障害が発生したため、処理を中断します。\n\n詳細ログを次の場所へ保存しました:\n{}\n\n以下の GitHub レポジトリへ報告をお願いいたします:\n{}\n\n今すぐエラーログと GitHub ページを開きますか？",
   "tray_ai_notice": "翻訳に関するお知らせ",
-  "ai_translation_notice": "本プログラムのテキストは専用のAIモデルによって翻訳されました。文脈によっては表現の不自然さや意図と異なる翻訳が含まれている場合があります。人間の手による翻訳改善にご協力いただける場合は、GitHubリポジトリ（https://github.com/TanukiSoftworks/Uzume）よりご参加いただけますと幸いです。"
+  "ai_translation_notice": "本プログラムのテキストは専用のAIモデルによって翻訳されました。文脈によっては表現の不自然さや意図と異なる翻訳が含まれている場合があります。人間の手による翻訳改善にご協力いただける場合は、GitHubリポジトリ（https://github.com/TanukiSoftworks/Uzume）よりご参加いただけますと幸いです。",
+  "tray_check_updates": "更新を確認",
+  "update_available_title": "Uzume - 利用可能な更新",
+  "update_available_msg": "Uzume の新しいバージョンが利用可能です: {}\n現在のバージョン: {}\n\nGitHub のダウンロードページを開きますか？",
+  "update_latest_title": "Uzume - 最新",
+  "update_latest_msg": "最新バージョン ({}) がインストールされています。",
+  "update_error_msg": "更新を自動的に確認できませんでした。\n\nGitHub を開いて手動で確認しますか？"
 }

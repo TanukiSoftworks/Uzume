@@ -23,5 +23,11 @@
   "crash_title": "Uzume - Critical Error Report",
   "crash_prompt": "Uzume encountered an unexpected fault and must terminate.\n\nA diagnostic log has been written to:\n{}\n\nPlease submit this incident to our issue tracker:\n{}\n\nWould you like to open the error log and the GitHub repository now?",
   "tray_ai_notice": "",
-  "ai_translation_notice": ""
+  "ai_translation_notice": "",
+  "tray_check_updates": "Check for updates",
+  "update_available_title": "Uzume - Update available",
+  "update_available_msg": "A new version of Uzume is available: {}\nYour current version is: {}\n\nWould you like to open the download page on GitHub?",
+  "update_latest_title": "Uzume - Up to date",
+  "update_latest_msg": "You have the latest version installed ({}).",
+  "update_error_msg": "Unable to check for updates automatically.\n\nWould you like to open GitHub to check manually?"
 }

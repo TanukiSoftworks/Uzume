@@ -23,5 +23,11 @@
   "crash_title": "Uzume - 치명적 오류 보고",
   "crash_prompt": "Uzume 실행 도중 예기치 못한 결함이 발생하여 종료됩니다.\n\n상세 진단 기록이 저장되었습니다:\n{}\n\n아래 GitHub 저장소로 해당 이슈를 제보해 주시기 바랍니다:\n{}\n\n오류 기록과 GitHub 페이지를 지금 여시겠습니까?",
   "tray_ai_notice": "번역 안내",
-  "ai_translation_notice": "본 프로그램의 텍스트는 전용 AI 언어 모델을 통해 번역되었습니다. 일부 문맥상 어색하거나 부자연스러운 번역이 포함되어 있을 수 있습니다. 사람이 직접 검수하는 정확한 번역 개선에 기여하고 싶으시다면 GitHub(https://github.com/TanukiSoftworks/Uzume)를 통해 참여해 주시기 바랍니다."
+  "ai_translation_notice": "본 프로그램의 텍스트는 전용 AI 언어 모델을 통해 번역되었습니다. 일부 문맥상 어색하거나 부자연스러운 번역이 포함되어 있을 수 있습니다. 사람이 직접 검수하는 정확한 번역 개선에 기여하고 싶으시다면 GitHub(https://github.com/TanukiSoftworks/Uzume)를 통해 참여해 주시기 바랍니다.",
+  "tray_check_updates": "업데이트 확인",
+  "update_available_title": "Uzume - 업데이트 가능",
+  "update_available_msg": "Uzume의 새 버전을 사용할 수 있습니다: {}\n현재 버전: {}\n\nGitHub 다운로드 페이지를 여시겠습니까?",
+  "update_latest_title": "Uzume - 최신 상태",
+  "update_latest_msg": "최신 버전({})이 설치되어 있습니다.",
+  "update_error_msg": "업데이트를 자동으로 확인할 수 없습니다.\n\nGitHub를 열어 수동으로 확인하시겠습니까?"
 }

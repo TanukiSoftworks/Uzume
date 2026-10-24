@@ -22,7 +22,13 @@ const DEFAULT_MUSIC_ICON: &str =
 const SPOTIFY_ICON: &str =
     "https://storage.googleapis.com/pr-newsroom-wp/1/2023/05/Spotify_Primary_Logo_RGB_Green.png";
 const DEEZER_ICON: &str =
-    "https://e-cdns-images.dzcdn.net/images/common/favicon/favicon-240x240.png";
+    "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/deezer.png";
+const TIDAL_ICON: &str =
+    "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/tidal.png";
+const APPLE_MUSIC_ICON: &str =
+    "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/apple-music.png";
+const YOUTUBE_MUSIC_ICON: &str =
+    "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/youtube-music.png";
 
 fn identify_player(app_id: &str) -> (&'static str, &'static str) {
     let lower = app_id.to_lowercase();
@@ -31,13 +37,13 @@ fn identify_player(app_id: &str) -> (&'static str, &'static str) {
     } else if lower.contains("deezer") {
         ("Deezer", DEEZER_ICON)
     } else if lower.contains("tidal") {
-        ("Tidal", DEFAULT_MUSIC_ICON)
+        ("Tidal", TIDAL_ICON)
     } else if lower.contains("apple") {
-        ("Apple Music", DEFAULT_MUSIC_ICON)
+        ("Apple Music", APPLE_MUSIC_ICON)
     } else if lower.contains("amazon") {
         ("Amazon Music", DEFAULT_MUSIC_ICON)
     } else if lower.contains("youtube") {
-        ("YouTube Music", DEFAULT_MUSIC_ICON)
+        ("YouTube Music", YOUTUBE_MUSIC_ICON)
     } else if lower.contains("foobar") {
         ("foobar2000", DEFAULT_MUSIC_ICON)
     } else if lower.contains("musicbee") {
@@ -110,20 +116,33 @@ fn worker_loop(config: Arc<Mutex<Config>>, status: Arc<Mutex<String>>) {
 
     let mut last_title = String::new();
     let mut last_state = PlaybackState::Other;
+    let mut last_app_id = String::new();
     let mut last_status_mode = StatusDisplayMode::ListeningSong;
     let mut last_custom_text = String::new();
 
     while !SHOULD_EXIT.load(Ordering::SeqCst) {
-        let (desired_client_id, current_cfg) = {
+        let current_cfg = {
             let cfg = config.lock().unwrap();
-            (cfg.get_active_client_id(), cfg.clone())
+            cfg.clone()
         };
 
-        if discord_client.is_none() || desired_client_id != current_connected_id {
-            match DiscordIpc::connect(&desired_client_id) {
+        let current_track = smtc.get_current_track();
+        let target_client_id = match &current_track {
+            Some(t) => current_cfg.get_client_id_for_app(&t.app_id),
+            None => current_cfg.get_active_client_id(),
+        };
+
+        let needs_reconnect = discord_client.is_none() || target_client_id != current_connected_id;
+
+        if needs_reconnect {
+            if let Some(mut old_client) = discord_client.take() {
+                let _ = old_client.clear_activity();
+            }
+
+            match DiscordIpc::connect(&target_client_id) {
                 Ok(client) => {
                     discord_client = Some(client);
-                    current_connected_id = desired_client_id.clone();
+                    current_connected_id = target_client_id.clone();
                     let mut st = status.lock().unwrap();
                     *st = "Conectado a Discord. Esperando reproduccion...".to_string();
                 }
@@ -137,12 +156,14 @@ fn worker_loop(config: Arc<Mutex<Config>>, status: Arc<Mutex<String>>) {
             }
         }
 
-        if let Some(track) = smtc.get_current_track() {
+        if let Some(track) = current_track {
             let config_changed = current_cfg.status_mode != last_status_mode
                 || current_cfg.custom_text != last_custom_text;
             let state_changed = track.title != last_title
                 || track.playback_state != last_state
-                || config_changed;
+                || track.app_id != last_app_id
+                || config_changed
+                || needs_reconnect;
 
             if state_changed {
                 let app_name = get_app_name(&track.app_id);
@@ -303,6 +324,7 @@ fn worker_loop(config: Arc<Mutex<Config>>, status: Arc<Mutex<String>>) {
 
                 last_title = track.title;
                 last_state = track.playback_state;
+                last_app_id = track.app_id;
                 last_status_mode = current_cfg.status_mode;
                 last_custom_text = current_cfg.custom_text;
             }
@@ -311,6 +333,7 @@ fn worker_loop(config: Arc<Mutex<Config>>, status: Arc<Mutex<String>>) {
                 let _ = client.clear_activity();
             }
             last_title.clear();
+            last_app_id.clear();
             last_state = PlaybackState::Other;
             let mut st = status.lock().unwrap();
             *st = "Uzume|Inactivo|Sin música activa||Listening to Uzume|".to_string();

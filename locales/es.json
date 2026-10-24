@@ -23,5 +23,11 @@
   "crash_title": "Uzume - Reporte de error crítico",
   "crash_prompt": "Uzume ha experimentado un fallo crítico y debe detenerse.\n\nEl reporte técnico detallado se ha guardado en:\n{}\n\nPor favor, remite este archivo abriendo una incidencia en:\n{}\n\n¿Deseas abrir el reporte de error y el repositorio en GitHub ahora?",
   "tray_ai_notice": "",
-  "ai_translation_notice": ""
+  "ai_translation_notice": "",
+  "tray_check_updates": "Buscar actualizaciones",
+  "update_available_title": "Uzume - Actualización disponible",
+  "update_available_msg": "Hay una nueva versión de Uzume disponible: {}\nTu versión actual es: {}\n\n¿Deseas abrir la página de descarga en GitHub?",
+  "update_latest_title": "Uzume - Actualizado",
+  "update_latest_msg": "Tienes instalada la versión más reciente ({}).",
+  "update_error_msg": "No se pudo verificar la actualización automáticamente.\n\n¿Deseas abrir GitHub para comprobar manualmente?"
 }

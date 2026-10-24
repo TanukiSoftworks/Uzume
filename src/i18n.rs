@@ -30,6 +30,12 @@ pub struct Strings {
     pub crash_prompt: String,
     pub tray_ai_notice: String,
     pub ai_translation_notice: String,
+    pub tray_check_updates: String,
+    pub update_available_title: String,
+    pub update_available_msg: String,
+    pub update_latest_title: String,
+    pub update_latest_msg: String,
+    pub update_error_msg: String,
 }
 
 static JSON_ES: &str = include_str!("../locales/es.json");
@@ -116,6 +122,12 @@ mod tests {
             assert!(!s.btn_save.is_empty());
             assert!(!s.crash_title.is_empty());
             assert!(!s.crash_prompt.is_empty());
+            assert!(!s.tray_check_updates.is_empty());
+            assert!(!s.update_available_title.is_empty());
+            assert!(!s.update_available_msg.is_empty());
+            assert!(!s.update_latest_title.is_empty());
+            assert!(!s.update_latest_msg.is_empty());
+            assert!(!s.update_error_msg.is_empty());
         }
     }
 

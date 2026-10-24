@@ -1,8 +1,6 @@
 fn main() {
     #[cfg(windows)]
     {
-        let version = env!("CARGO_PKG_VERSION");
-        let pe_version = format!("{}.0", version);
         let homepage = env!("CARGO_PKG_HOMEPAGE");
         let authors = env!("CARGO_PKG_AUTHORS");
 
@@ -10,8 +8,8 @@ fn main() {
         res.set_icon("assets/icon.ico");
         res.set("CompanyName", "Tanuki Softworks");
         res.set("ProductName", "Uzume");
-        res.set("ProductVersion", &pe_version);
-        res.set("FileVersion", &pe_version);
+        res.set("ProductVersion", "1.1.0");
+        res.set("FileVersion", "1.1.0.0");
         res.set("FileDescription", "Uzume");
         res.set("OriginalFilename", "uzume.exe");
         res.set("InternalName", "uzume");

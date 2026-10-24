@@ -37,6 +37,7 @@ impl Default for StatusDisplayMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AppPreset {
+    Auto,
     Music,
     Deezer,
     Custom,
@@ -44,7 +45,7 @@ pub enum AppPreset {
 
 impl Default for AppPreset {
     fn default() -> Self {
-        Self::Music
+        Self::Auto
     }
 }
 
@@ -74,7 +75,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             language: Language::Auto,
-            preset: AppPreset::Music,
+            preset: AppPreset::Auto,
             custom_client_id: String::new(),
             status_mode: StatusDisplayMode::ListeningSong,
             custom_text: String::new(),
@@ -85,19 +86,22 @@ impl Default for Config {
 }
 
 impl Config {
-    pub fn get_active_client_id(&self) -> String {
-        match self.preset {
-            AppPreset::Music => MUSIC_CLIENT_ID.to_string(),
-            AppPreset::Deezer => DEEZER_CLIENT_ID.to_string(),
-            AppPreset::Custom => {
-                let clean = self.custom_client_id.trim();
-                if !clean.is_empty() {
-                    clean.to_string()
-                } else {
-                    MUSIC_CLIENT_ID.to_string()
-                }
-            }
+    pub fn get_client_id_for_app(&self, app_id: &str) -> String {
+        let clean = self.custom_client_id.trim();
+        if self.preset == AppPreset::Custom && !clean.is_empty() {
+            return clean.to_string();
         }
+
+        let lower = app_id.to_lowercase();
+        if lower.contains("deezer") {
+            DEEZER_CLIENT_ID.to_string()
+        } else {
+            MUSIC_CLIENT_ID.to_string()
+        }
+    }
+
+    pub fn get_active_client_id(&self) -> String {
+        self.get_client_id_for_app("")
     }
 
     fn config_path() -> Option<PathBuf> {
