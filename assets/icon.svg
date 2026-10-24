@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Outer Badge Disc -->
+  <circle cx="128" cy="128" r="124" fill="#16171A" stroke="#282930" stroke-width="3"/>
+
+  <!-- Outer Dashed Sacred Bronze Ring (10 flat-ended dashes) -->
+  <circle cx="128" cy="128" r="95.5" fill="none" stroke="#B84337" stroke-width="10" stroke-dasharray="31 29" stroke-linecap="butt" transform="rotate(-9 128 128)"/>
+
+  <!-- Inner Sacred Ivory Mirror Ring -->
+  <circle cx="128" cy="128" r="75.5" fill="none" stroke="#E2E2E0" stroke-width="8"/>
+
+  <!-- Asymmetric U Soundwave Curve -->
+  <path d="M100 108 V138.5 A28 28 0 0 0 156 138.5 V99" fill="none" stroke="#B84337" stroke-width="13" stroke-linecap="round"/>
+
+  <!-- White Note Head Dot on Right Tip -->
+  <circle cx="156" cy="99" r="6" fill="#E2E2E0"/>
+</svg>
