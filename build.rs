@@ -3,7 +3,6 @@ fn main() {
     {
         let version = env!("CARGO_PKG_VERSION");
         let pe_version = format!("{}.0", version);
-        let description = env!("CARGO_PKG_DESCRIPTION");
         let homepage = env!("CARGO_PKG_HOMEPAGE");
         let authors = env!("CARGO_PKG_AUTHORS");
 
@@ -13,7 +12,7 @@ fn main() {
         res.set("ProductName", "Uzume");
         res.set("ProductVersion", &pe_version);
         res.set("FileVersion", &pe_version);
-        res.set("FileDescription", description);
+        res.set("FileDescription", "Uzume");
         res.set("OriginalFilename", "uzume.exe");
         res.set("InternalName", "uzume");
         res.set(

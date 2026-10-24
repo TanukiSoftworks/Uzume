@@ -2,7 +2,7 @@
 name = "uzume"
 version = "1.0.0"
 edition = "2021"
-description = "Discord music presence for unsupported apps (and spotify too.. idk)"
+description = "Discord music presence for Windows via SMTC"
 authors = ["Tanuki Softworks <luis.sepulveda@tanukisoftworks.com>"]
 homepage = "https://uzume.tanukisoftworks.com"
 repository = "https://github.com/TanukiSoftworks/Uzume"
