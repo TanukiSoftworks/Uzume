@@ -2,12 +2,13 @@
 
 ## Supported Versions
 
-Currently we support this version of uzume
+Currently we support this version of uzume:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.1   | :white_check_mark: |
-| 1.0.0   |    :x:   |
+| Version | Supported |
+| :--- | :--- |
+| 1.1.0 | Yes |
+| 1.0.1 | No |
+| 1.0.0 | No |
 
 ## Reporting a Vulnerability
 
